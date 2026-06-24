@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+:root {
+  --background: #0F172A;
+  --foreground: #F8FAFC;
+  --primary: #1E293B;
+  --secondary: #334155;
+  --accent: #22C55E;
+  --accent-hover: #16A34A;
+  --muted: #272F42;
+  --border: #334155;
+  --border-hover: #475569;
+  --destructive: #EF4444;
+  --warning: #F59E0B;
+  --info: #3B82F6;
+  --text-secondary: #94A3B8;
+  --text-tertiary: #64748B;
+  --surface: #1E293B;
+  --surface-hover: #253348;
+  --ring: #22C55E;
+
+  --ease-out-quart: cubic-bezier(0.25, 1, 0.5, 1);
+  --ease-out-expo: cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-sans);
+  --font-mono: var(--font-mono);
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
+}
+
+::selection {
+  background: rgba(34, 197, 94, 0.25);
+  color: #F8FAFC;
+}
+
+:focus-visible {
+  outline: 2px solid var(--ring);
+  outline-offset: 2px;
+}
+
+/* --- Animations --- */
+
+@keyframes fade-in-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes slide-in-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes scanning-line {
+  0% {
+    top: 2.5rem;
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    top: calc(100% - 1rem);
+    opacity: 0;
+  }
+}
+
+@keyframes pulse-border {
+  0%, 100% {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 0 rgba(34, 197, 94, 0);
+  }
+  50% {
+    border-color: var(--accent);
+    box-shadow: 0 0 12px 0 rgba(34, 197, 94, 0.15);
+  }
+}
+
+@keyframes check-draw {
+  from {
+    stroke-dashoffset: 24;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+.animate-fade-in-up {
+  animation: fade-in-up 300ms var(--ease-out-quart) both;
+  animation-delay: calc(var(--stagger, 0) * 60ms);
+}
+
+.animate-fade-in {
+  animation: fade-in 250ms var(--ease-out-quart) both;
+}
+
+.animate-slide-in-down {
+  animation: slide-in-down 250ms var(--ease-out-quart) both;
+}
+
+.animate-pulse-border {
+  animation: pulse-border 2s ease-in-out infinite;
+}
+
+.scanning-line {
+  position: absolute;
+  left: 1rem;
+  right: 1rem;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: scanning-line 2s var(--ease-out-quart) infinite;
+  pointer-events: none;
+  z-index: 1;
+}
+
+/* Textarea focus glow */
+textarea:focus {
+  box-shadow: 0 0 0 1px var(--accent), 0 0 16px -4px rgba(34, 197, 94, 0.2);
+}
+
+/* Button hover lift */
+button:not(:disabled):hover {
+  transform: translateY(-1px);
+}
+button:not(:disabled):active {
+  transform: translateY(0);
+}
+
+/* Copy confirmation check animation */
+.check-animated path {
+  stroke-dasharray: 24;
+  stroke-dashoffset: 0;
+  animation: check-draw 300ms var(--ease-out-expo) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+  .scanning-line {
+    display: none;
+  }
+  textarea:focus {
+    box-shadow: 0 0 0 1px var(--accent);
+  }
+}
