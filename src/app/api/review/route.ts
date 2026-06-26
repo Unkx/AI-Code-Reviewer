@@ -23,7 +23,7 @@ function createGroqClient() {
   return new Groq({ apiKey });
 }
 
-function sanitizeLanguage(lang: unknown): string {
+export function sanitizeLanguage(lang: unknown): string {
   if (typeof lang !== "string" || !VALID_LANGUAGES.has(lang)) {
     return "Other";
   }
@@ -40,7 +40,7 @@ type ReviewResult = {
   fixedCode: string | null;
 };
 
-function validateResult(raw: unknown): ReviewResult {
+export function validateResult(raw: unknown): ReviewResult {
   const obj = raw as Record<string, unknown>;
   return {
     languageMismatch: typeof obj.languageMismatch === "boolean" ? obj.languageMismatch : false,
