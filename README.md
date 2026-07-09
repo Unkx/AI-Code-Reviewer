@@ -2,6 +2,8 @@
 
 A GitHub App that reviews your pull requests and only suggests fixes that have already passed your project's test suite.
 
+**Live:** [ai-code-reviewer-nu-indol.vercel.app](https://ai-code-reviewer-nu-indol.vercel.app/)
+
 ## How it works
 
 1. Install the app on a repository. It opens a one-time setup PR adding `.github/workflows/codelens-verify.yml`.
