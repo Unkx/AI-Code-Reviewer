@@ -125,6 +125,29 @@ describe("handleWorkflowRunCompleted", () => {
     expect(deletePendingVerificationMock).toHaveBeenCalledWith("codelens/verify/7/0");
   });
 
+  it("still cleans up (deletes pending record + branch) when postSuggestionComment rejects, and rethrows", async () => {
+    getPendingVerificationMock.mockResolvedValue(record);
+    postSuggestionCommentMock.mockRejectedValue(new Error("422 outside diff hunk"));
+    const { handleWorkflowRunCompleted } = await import("../result-handler");
+    const octokit = fakeOctokit("head-sha");
+
+    await expect(
+      handleWorkflowRunCompleted(octokit as never, {
+        owner: "acme",
+        repo: "widgets",
+        branchName: "codelens/verify/7/0",
+        conclusion: "success",
+      }),
+    ).rejects.toThrow("422 outside diff hunk");
+
+    expect(deletePendingVerificationMock).toHaveBeenCalledWith("codelens/verify/7/0");
+    expect(octokit.rest.git.deleteRef).toHaveBeenCalledWith({
+      owner: "acme",
+      repo: "widgets",
+      ref: "heads/codelens/verify/7/0",
+    });
+  });
+
   it("deletes the temp branch after every resolved outcome", async () => {
     getPendingVerificationMock.mockResolvedValue(record);
     const { handleWorkflowRunCompleted } = await import("../result-handler");

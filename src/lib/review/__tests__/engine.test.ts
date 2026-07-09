@@ -79,6 +79,18 @@ describe("reviewPullRequest", () => {
     expect(result[0].id.length).toBeGreaterThan(0);
   });
 
+  it("returns [] when the Groq client throws (e.g. network error or rate limit)", async () => {
+    const groq = {
+      chat: {
+        completions: {
+          create: vi.fn().mockRejectedValue(new Error("rate limited")),
+        },
+      },
+    } as unknown as Groq;
+    const result = await reviewPullRequest(groq, [{ file: "a.ts", content: "x", patch: "" }]);
+    expect(result).toEqual([]);
+  });
+
   it("sends file content and diff to Groq", async () => {
     const groq = fakeGroq("[]");
     await reviewPullRequest(groq, [{ file: "a.ts", content: "FILE_CONTENT", patch: "DIFF_PATCH" }]);

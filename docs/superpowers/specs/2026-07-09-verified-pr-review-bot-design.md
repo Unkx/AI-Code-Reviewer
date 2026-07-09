@@ -36,7 +36,7 @@ workflow_run (completed) webhook
 ## Components
 
 ### 1. GitHub App
-Registered app with permissions: pull requests (read/write), contents (read/write), checks (read), workflows (write, to dispatch). Installed per-repo by the user.
+Registered app with permissions: pull requests (read/write), contents (read/write), workflows (write — required to commit the verify workflow file), actions (read/write — required to dispatch it), checks (read). Installed per-repo by the user.
 
 ### 2. Webhook receiver — `src/app/api/webhook/github/route.ts`
 Verifies GitHub's HMAC signature on every request. Handles:

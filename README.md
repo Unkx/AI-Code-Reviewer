@@ -38,6 +38,7 @@ npm run dev
 | `UPSTASH_REDIS_REST_URL` | Yes | From the Upstash Redis database (Vercel Marketplace) |
 | `UPSTASH_REDIS_REST_TOKEN` | Yes | From the Upstash Redis database (Vercel Marketplace) |
 | `NEXT_PUBLIC_GITHUB_APP_SLUG` | Yes | The app's slug, used to build the install link |
+| `CRON_SECRET` | Yes | Random secret; authorizes the stale-verification cleanup cron |
 | `GROQ_API_KEY` | Yes | API key from [console.groq.com](https://console.groq.com/) |
 
 ## Scope

@@ -15,9 +15,9 @@ const jetbrainsMono = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "CodeLens — A little AI helper to fix code with auto detection",
+  title: "CodeLens — Verified PR Review Bot",
   description:
-    "Paste code, get senior-level feedback on bugs, security, and quality. Auto-detects language mismatches and proposes fixes.",
+    "A GitHub App that reviews pull requests and only suggests fixes that have already passed your test suite.",
 };
 
 export default function RootLayout({

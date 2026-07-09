@@ -28,6 +28,17 @@ describe("GET /api/cron/cleanup", () => {
     expect(sweepStaleVerificationsMock).not.toHaveBeenCalled();
   });
 
+  it("returns 401 for a literal 'Bearer undefined' header when CRON_SECRET is unset", async () => {
+    delete process.env.CRON_SECRET;
+    const { GET } = await import("../route");
+    const req = new Request("http://localhost/api/cron/cleanup", {
+      headers: { authorization: "Bearer undefined" },
+    });
+    const res = await GET(req as never);
+    expect(res.status).toBe(401);
+    expect(sweepStaleVerificationsMock).not.toHaveBeenCalled();
+  });
+
   it("runs the sweep and returns the count with a valid bearer token", async () => {
     const { GET } = await import("../route");
     const req = new Request("http://localhost/api/cron/cleanup", {

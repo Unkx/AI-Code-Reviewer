@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import Groq from "groq-sdk";
 import { verifyGithubSignature } from "@/lib/github/verify-signature";
 import { createInstallationOctokit } from "@/lib/github/app-client";
-import { ensureVerifyWorkflow } from "@/lib/github/setup-workflow";
+import { ensureVerifyWorkflow, VERIFY_WORKFLOW_PATH } from "@/lib/github/setup-workflow";
 import { reviewPullRequest } from "@/lib/review/engine";
 import { detectTestCommand } from "@/lib/verify/detect-test-command";
 import { dispatchVerification, MAX_CANDIDATES_PER_PR } from "@/lib/verify/orchestrator";
@@ -47,7 +47,13 @@ export async function POST(req: NextRequest) {
     const files: ReviewFileInput[] = [];
     for (const f of changedFiles) {
       if (f.status === "removed") continue;
-      const { data: contentData } = await octokit.rest.repos.getContent({ owner, repo, path: f.filename, ref: headSha });
+      let contentData;
+      try {
+        ({ data: contentData } = await octokit.rest.repos.getContent({ owner, repo, path: f.filename, ref: headSha }));
+      } catch (err) {
+        console.error(`Failed to fetch content for ${f.filename}:`, err);
+        continue;
+      }
       if (Array.isArray(contentData) || contentData.type !== "file") continue;
       files.push({
         file: f.filename,
@@ -74,21 +80,32 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true, skipped: "no-test-command" });
     }
 
+    let dispatched = 0;
     for (let index = 0; index < candidates.length; index++) {
-      await dispatchVerification(octokit, {
-        owner,
-        repo,
-        installationId: payload.installation.id,
-        prNumber,
-        headSha,
-        fix: candidates[index],
-        index,
-      });
+      try {
+        await dispatchVerification(octokit, {
+          owner,
+          repo,
+          installationId: payload.installation.id,
+          prNumber,
+          headSha,
+          fix: candidates[index],
+          index,
+        });
+        dispatched++;
+      } catch (err) {
+        console.error(`Failed to dispatch verification for candidate ${index}:`, err);
+        continue;
+      }
     }
-    return NextResponse.json({ ok: true, dispatched: candidates.length });
+    return NextResponse.json({ ok: true, dispatched });
   }
 
   if (event === "workflow_run" && payload.action === "completed") {
+    if (payload.workflow_run.path !== VERIFY_WORKFLOW_PATH) {
+      return NextResponse.json({ ok: true, ignored: "not-verify-workflow" });
+    }
+
     const owner = payload.repository.owner.login;
     const repo = payload.repository.name;
     const branchName = payload.workflow_run.head_branch;

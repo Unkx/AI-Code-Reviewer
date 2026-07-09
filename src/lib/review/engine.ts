@@ -56,13 +56,19 @@ export async function reviewPullRequest(groq: Groq, files: ReviewFileInput[]): P
     return [];
   }
 
-  const chat = await groq.chat.completions.create({
-    model: "llama-3.3-70b-versatile",
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: buildUserContent(files) },
-    ],
-  });
+  let chat;
+  try {
+    chat = await groq.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: buildUserContent(files) },
+      ],
+    });
+  } catch (err) {
+    console.error("Groq review request failed:", err);
+    return [];
+  }
 
   const content = chat.choices?.[0]?.message?.content;
   if (!content) {

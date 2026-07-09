@@ -2451,7 +2451,7 @@ git commit -m "feat: sweep stale verification branches on a cron"
 
 Run once after Task 13, against a real GitHub App and a scratch repo (no automated CI covers this):
 
-1. Register a GitHub App (permissions: PRs read/write, contents read/write, actions read/write, checks read; subscribe to `installation`, `pull_request`, `workflow_run` events); point its webhook at the deployed `/api/webhook/github` URL.
+1. Register a GitHub App (permissions: PRs read/write, contents read/write, workflows write (required to commit files under .github/workflows/), actions read/write, checks read; subscribe to `installation`, `pull_request`, `workflow_run` events); point its webhook at the deployed `/api/webhook/github` URL.
 2. Install it on a scratch JS/TS repo with an `npm test` script. Confirm a setup PR appears adding `.github/workflows/codelens-verify.yml`. Merge it.
 3. Open a PR introducing a deliberate, fixable bug covered by an existing test. Confirm: a candidate fix gets dispatched (check the Actions tab for a `codelens-verify` run), and once it passes, a one-click suggestion comment appears on the PR.
 4. Open a second PR introducing a bug where the "fix" the model proposes would break another test. Confirm no comment appears for that candidate.

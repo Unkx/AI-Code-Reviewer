@@ -22,6 +22,7 @@ vi.mock("@/lib/github/app-client", () => ({
 }));
 vi.mock("@/lib/github/setup-workflow", () => ({
   ensureVerifyWorkflow: ensureVerifyWorkflowMock,
+  VERIFY_WORKFLOW_PATH: ".github/workflows/codelens-verify.yml",
 }));
 vi.mock("@/lib/review/engine", () => ({
   reviewPullRequest: reviewPullRequestMock,
@@ -125,6 +126,27 @@ describe("POST /api/webhook/github", () => {
     expect(postInformationalCommentMock).not.toHaveBeenCalled();
   });
 
+  it("isolates a failing dispatchVerification call and still attempts/succeeds the rest", async () => {
+    reviewPullRequestMock.mockResolvedValue([
+      { id: "f1", file: "a.ts", lineStart: 1, lineEnd: 1, replacement: "x", explanation: "e" },
+      { id: "f2", file: "b.ts", lineStart: 1, lineEnd: 1, replacement: "y", explanation: "e2" },
+    ]);
+    dispatchVerificationMock
+      .mockRejectedValueOnce(new Error("422 branch already exists"))
+      .mockResolvedValueOnce(undefined);
+    const req = makeRequest("pull_request", {
+      action: "opened",
+      installation: { id: 1 },
+      repository: { name: "widgets", owner: { login: "acme" } },
+      pull_request: { number: 7, head: { sha: "head-sha" } },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(dispatchVerificationMock).toHaveBeenCalledTimes(2);
+    const json = await res.json();
+    expect(json.dispatched).toBe(1);
+  });
+
   it("posts an informational comment instead of dispatching when no test command is detected", async () => {
     fakeOctokit.rest.repos.getContent.mockResolvedValue({
       data: { type: "file", content: Buffer.from(JSON.stringify({ scripts: {} })).toString("base64") },
@@ -144,12 +166,16 @@ describe("POST /api/webhook/github", () => {
     expect(postInformationalCommentMock).toHaveBeenCalledTimes(1);
   });
 
-  it("resolves workflow_run completed events", async () => {
+  it("resolves workflow_run completed events for the codelens verify workflow", async () => {
     const req = makeRequest("workflow_run", {
       action: "completed",
       installation: { id: 1 },
       repository: { name: "widgets", owner: { login: "acme" } },
-      workflow_run: { head_branch: "codelens/verify/7/0", conclusion: "success" },
+      workflow_run: {
+        head_branch: "codelens/verify/7/0",
+        conclusion: "success",
+        path: ".github/workflows/codelens-verify.yml",
+      },
     });
     const res = await POST(req);
     expect(res.status).toBe(200);
@@ -159,6 +185,22 @@ describe("POST /api/webhook/github", () => {
       branchName: "codelens/verify/7/0",
       conclusion: "success",
     });
+  });
+
+  it("ignores workflow_run completed events from a workflow other than codelens-verify", async () => {
+    const req = makeRequest("workflow_run", {
+      action: "completed",
+      installation: { id: 1 },
+      repository: { name: "widgets", owner: { login: "acme" } },
+      workflow_run: {
+        head_branch: "codelens/verify/7/0",
+        conclusion: "success",
+        path: ".github/workflows/some-other-ci.yml",
+      },
+    });
+    const res = await POST(req);
+    expect(res.status).toBe(200);
+    expect(handleWorkflowRunCompletedMock).not.toHaveBeenCalled();
   });
 
   it("returns 200 and ignores unhandled event types", async () => {

@@ -34,21 +34,26 @@ export async function handleWorkflowRunCompleted(
     return "dropped";
   }
 
-  await postSuggestionComment(octokit, {
-    owner,
-    repo,
-    prNumber: pending.prNumber,
-    commitSha: pr.head.sha,
-    fix: {
-      id: branchName,
-      file: pending.file,
-      lineStart: pending.lineStart,
-      lineEnd: pending.lineEnd,
-      replacement: pending.replacement,
-      explanation: pending.explanation,
-    },
-  });
-
-  await cleanup();
-  return "posted";
+  try {
+    await postSuggestionComment(octokit, {
+      owner,
+      repo,
+      prNumber: pending.prNumber,
+      commitSha: pr.head.sha,
+      fix: {
+        id: branchName,
+        file: pending.file,
+        lineStart: pending.lineStart,
+        lineEnd: pending.lineEnd,
+        replacement: pending.replacement,
+        explanation: pending.explanation,
+      },
+    });
+    return "posted";
+  } catch (err) {
+    console.error(`Failed to post suggestion for ${branchName}:`, err);
+    throw err;
+  } finally {
+    await cleanup();
+  }
 }
