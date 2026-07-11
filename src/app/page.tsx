@@ -15,7 +15,6 @@ const copy = {
       "Every suggested fix has already passed your tests.",
     heroBody:
       "CodeLens reviews pull requests with Llama 3.3, runs each candidate fix against your real test suite on a disposable branch, and only posts the ones that provably pass.",
-    install: "Install on GitHub",
     repo: "View source",
     cardBot: "codelens[bot]",
     cardStatus: "verified · 12s ago",
@@ -55,7 +54,6 @@ const copy = {
     heroLead: "Każda proponowana poprawka już przeszła Twoje testy.",
     heroBody:
       "CodeLens sprawdza pull requesty za pomocą Llama 3.3, uruchamia każdą kandydacką poprawkę na Twoim prawdziwym zestawie testów na tymczasowej gałęzi i publikuje tylko te, które faktycznie działają.",
-    install: "Zainstaluj na GitHubie",
     repo: "Zobacz kod źródłowy",
     cardBot: "codelens[bot]",
     cardStatus: "zweryfikowano · 12s temu",
@@ -113,8 +111,6 @@ function CheckIcon() {
 
 export default function Page() {
   const [lang, setLang] = useState<Lang>("en");
-  const slug = process.env.NEXT_PUBLIC_GITHUB_APP_SLUG ?? "";
-  const installUrl = `https://github.com/apps/${slug}/installations/new`;
   const t = copy[lang];
 
   return (
@@ -150,14 +146,8 @@ export default function Page() {
             </p>
             <div className="flex flex-wrap items-center gap-4 pt-2">
               <a
-                href={installUrl}
-                className="rounded-md bg-[var(--accent)] px-6 py-3 font-mono text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
-              >
-                {t.install}
-              </a>
-              <a
                 href={REPO_URL}
-                className="rounded-md border border-[var(--border)] px-6 py-3 font-mono text-sm font-semibold text-[var(--foreground)] transition-colors hover:border-[var(--border-hover)]"
+                className="rounded-md bg-[var(--accent)] px-6 py-3 font-mono text-sm font-semibold text-white transition-colors hover:bg-[var(--accent-hover)]"
               >
                 {t.repo}
               </a>

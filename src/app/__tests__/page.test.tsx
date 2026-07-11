@@ -9,10 +9,9 @@ describe("Home page", () => {
     expect(screen.getByRole("heading", { name: /codelens/i })).toBeInTheDocument();
   });
 
-  it("links to the GitHub App install page", () => {
-    process.env.NEXT_PUBLIC_GITHUB_APP_SLUG = "codelens-review";
+  it("links to the GitHub repo", () => {
     render(<Page />);
-    const link = screen.getByRole("link", { name: /install/i });
-    expect(link).toHaveAttribute("href", "https://github.com/apps/codelens-review/installations/new");
+    const link = screen.getByRole("link", { name: /view source/i });
+    expect(link).toHaveAttribute("href", "https://github.com/Unkx/AI-Code-Reviewer");
   });
 });
